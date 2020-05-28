@@ -1,5 +1,4 @@
-package com.spring.demo.anno.controller;
-
+package com.spring.demo.aop;
 import com.spring.demo.anno.ComponentTest;
 import com.spring.demo.anno.MyRequestParam;
 
