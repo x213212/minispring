@@ -40,7 +40,7 @@ public class UtilsScan  extends HttpServlet {
             File childfiletmp = new File( packagePath +"\\" +fileName);
             String classFileName[] = childfiletmp.list();
             for (String className : classFileName ){
-                if(className.equals("aop") )
+                if(className.equals("aop")   )
                     continue;
                 className = className.substring(0,className.indexOf("."));
                 Object object = null;

@@ -1,4 +1,4 @@
-package com.spring.demo.controller;
+package com.spring.demo.anno.controller;
 
 import com.spring.demo.anno.ComponentTest;
 import com.spring.demo.anno.MyRequestParam;
@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@ComponentTest
+@ComponentTest("Controller")
 public class IndexController {
     public void test1(HttpServletRequest request, HttpServletResponse response,
                       @MyRequestParam("param") String param){

@@ -12,7 +12,7 @@ public class IndexAop {
 
     @Before({"com.spring.demo.impl.IndexServiceimpl","beforeMethod"})
     public void beforeMethod(){
-        System.out.println("qwd");
+        System.out.println("qwwwwwwwwwd");
     }
     @After({"com.spring.demo.impl.IndexServiceimpl","AfterMethod"})
     public void AfterMethod(){
