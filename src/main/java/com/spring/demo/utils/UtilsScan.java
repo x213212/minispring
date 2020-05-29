@@ -4,14 +4,19 @@ import com.spring.demo.anno.*;
 import com.spring.demo.anno.aop.*;
 import com.spring.demo.aop.IndexAop;
 import com.spring.demo.serivce.IndexService;
+import com.spring.demo.servlet.MyDispatcherServlet;
 import com.sun.net.httpserver.HttpServer;
-import com.sun.xml.internal.ws.api.ha.StickyFeature;
-import org.springframework.context.annotation.ComponentScan;
+import org.apache.catalina.Context;
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.startup.Tomcat;
 
+
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.datatransfer.SystemFlavorMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,16 +28,45 @@ import java.lang.reflect.Proxy;
 import java.util.*;
 
 
-public class UtilsScan  extends HttpServlet {
+public class UtilsScan {
     public static List<Map <String , Object>> ioclist = new ArrayList<>();
     public static List<Map <String , Object>> proxyioclist = new ArrayList<>();
 
-    private Map<String, Method> handlerMapping = new  HashMap<>();
+    private Properties properties = new Properties();
 
-    private Map<String, Object> controllerMap  =new HashMap<>();
+    private static Map<String, Method> handlerMapping = new  HashMap<>();
 
+    private static Map<String, Object> controllerMap  =new HashMap<>();
+    public UtilsScan() throws LifecycleException {
+        UtilsScan.doScan();
+        java.io.File file = new java.io.File("." );
+        int port = 8080;
+        Tomcat tomcat = new Tomcat();
+        tomcat.setBaseDir("temp");
+        tomcat.setPort(port);
+
+        String contextPath = "/";
+        String docBase = file.getAbsolutePath();
+
+        Context context = tomcat.addContext(contextPath, docBase);
+
+        HttpServlet servlet = new MyDispatcherServlet(handlerMapping,controllerMap);
+        String servletName = "MyDispatcherServlet";
+        String urlPattern = "/*";
+
+        tomcat.addServlet(contextPath, servletName, servlet);
+        context.addServletMappingDecoded(urlPattern, servletName);
+
+        tomcat.start();
+        tomcat.getServer().await();
+
+//        ServletConfig tmp =this.getServletConfig();
+//        doLoadConfig(tmp.getInitParameter("contextConfigLocation"));
+//
+//        UtilsScan.doScan();
+    }
     public  static void doScan(){
-        String packagePath =  "D:\\Programming\\spring\\simplespringioc\\src\\main\\java\\com\\spring\\demo";
+        String packagePath =  "D:\\Programming\\spring\\minispringcore\\minispring\\src\\main\\java\\com\\spring\\demo";
         File file = new File (packagePath );
         String[] childFile = file.list();
         for (String fileName : childFile) {
@@ -40,7 +74,7 @@ public class UtilsScan  extends HttpServlet {
             File childfiletmp = new File( packagePath +"\\" +fileName);
             String classFileName[] = childfiletmp.list();
             for (String className : classFileName ){
-                if(className.equals("aop")   )
+                if(className.equals("aop") || className.equals("run") ||   className.equals("MyDispatcherServlet") )
                     continue;
                 className = className.substring(0,className.indexOf("."));
                 Object object = null;
@@ -78,6 +112,27 @@ public class UtilsScan  extends HttpServlet {
         initHandlerMapping();
     }
 
+
+    private void  doLoadConfig(String location){
+        //把web.xml中的contextConfigLocation对应value值的文件加载到流里面
+        InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream(location);
+        try {
+            //用Properties文件加载文件里的内容
+            properties.load(resourceAsStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            //关流
+            if(null!=resourceAsStream){
+                try {
+                    resourceAsStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
     private static void initHandlerMapping(){
         if(ioclist.isEmpty()){
             return;
@@ -92,14 +147,28 @@ public class UtilsScan  extends HttpServlet {
                     String baseUrl ="";
                     try {
                         tempClassType = tempType[0].value()[0];
+
                         System.out.println(tempType[0].value()[0]);
                     } catch ( Exception e){
                         tempClassType ="";
                     }
                     if (tempClassType.equals("Controller") ) {
-                        Field[] fields = tempClass.getDeclaredFields();
-                        for (Field tempfield : fields) {
 
+                        MyRequestMapping[] tempType2 = (MyRequestMapping[])  tempClass.getAnnotationsByType(MyRequestMapping.class);
+                        baseUrl = tempType2[0].value();
+
+                        Method[] methods = tempClass.getMethods();
+                        for (Method method : methods) {
+                            if(!method.isAnnotationPresent(MyRequestMapping.class)){
+                                continue;
+                            }
+                            MyRequestMapping annotation = method.getAnnotation(MyRequestMapping.class);
+                            String url = annotation.value();
+
+                            url =(baseUrl+"/"+url).replaceAll("/+", "/");
+                            handlerMapping.put(url,method);
+                            controllerMap.put(url,tempObject);
+                            System.out.println(url+","+method);
                         }
 //                        if(tempClass.isAnnotationPresent(MyRequestMapping.class)){
 //                            MyRequestMapping annotation = tempClass.getAnnotation(MyRequestMapping.class);
@@ -161,7 +230,7 @@ public class UtilsScan  extends HttpServlet {
                     tempClassType ="";
                 }
 
-                if (tempClassType.equals("Default") || tempClassType.equals("") ) {
+                if (tempClassType.equals("Default") || tempClassType.equals("") || tempClassType.equals("Controller") ) {
                     Field[] fields = tempClass.getDeclaredFields();
                     for (Field tempfield : fields) {
 //                    System.out.println(tempfield.value());
@@ -261,79 +330,6 @@ public class UtilsScan  extends HttpServlet {
         }
     }
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        this.doPost(req,resp);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
-            //处理请求
-            doDispatch(req,resp);
-        } catch (Exception e) {
-            resp.getWriter().write("500!! Server Exception");
-        }
-
-    }
-
-
-
-    private void doDispatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        if(handlerMapping.isEmpty()){
-            return;
-        }
-
-        String url =req.getRequestURI();
-        String contextPath = req.getContextPath();
-
-        url=url.replace(contextPath, "").replaceAll("/+", "/");
-
-        if(!this.handlerMapping.containsKey(url)){
-            resp.getWriter().write("404 NOT FOUND!");
-            return;
-        }
-
-        Method method =this.handlerMapping.get(url);
-
-        //获取方法的参数列表
-        Class<?>[] parameterTypes = method.getParameterTypes();
-
-        //获取请求的参数
-        Map<String, String[]> parameterMap = req.getParameterMap();
-
-        //保存参数值
-        Object [] paramValues= new Object[parameterTypes.length];
-
-        //方法的参数列表
-        for (int i = 0; i<parameterTypes.length; i++){
-            //根据参数名称，做某些处理
-            String requestParam = parameterTypes[i].getSimpleName();
-
-
-            if (requestParam.equals("HttpServletRequest")){
-                //参数类型已明确，这边强转类型
-                paramValues[i]=req;
-                continue;
-            }
-            if (requestParam.equals("HttpServletResponse")){
-                paramValues[i]=resp;
-                continue;
-            }
-            if(requestParam.equals("String")){
-                for (Map.Entry<String, String[]> param : parameterMap.entrySet()) {
-                    String value =Arrays.toString(param.getValue()).replaceAll("\\[|\\]", "").replaceAll(",\\s", ",");
-                    paramValues[i]=value;
-                }
-            }
-        }
-        //利用反射机制来调用
-        try {
-            method.invoke(this.controllerMap.get(url), paramValues);//第一个参数是method所对应的实例 在ioc容器中
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
 
 
@@ -353,8 +349,11 @@ public class UtilsScan  extends HttpServlet {
         return Proxy.newProxyInstance(UtilsScan.class.getClassLoader(),
                 bean.getClass().getInterfaces(), advice);
     }
-    public static void main(String[] args) {
-        UtilsScan.doScan();
-    }
+
+
+//    public static void main(String[] args) {
+//        doLoadConfig(config.getInitParameter("contextConfigLocation"));
+//        UtilsScan.doScan();
+//    }
 
 }
