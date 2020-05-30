@@ -7,7 +7,7 @@ import java.util.Map;
 public class AnnotationConfigApplicationContext {
     public UtilsScan tmp = new UtilsScan();
     public  AnnotationConfigApplicationContext () throws LifecycleException {
-        //tmp.doScan();
+
     }
     public Object getBean (String className)
     {

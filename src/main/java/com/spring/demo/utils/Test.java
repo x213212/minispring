@@ -13,6 +13,8 @@ import org.apache.catalina.LifecycleException;
 
 public class Test {
     public static void main(String[] args) throws LifecycleException, InterruptedException, ServletException {
+        AnnotationConfigApplicationContext annotationConfigApplicationContext = new AnnotationConfigApplicationContext ();
+
 
 //        java.io.File file = new java.io.File("." );
 //
@@ -45,12 +47,12 @@ public class Test {
         ///
 
         //UtilsScan tmp = new UtilsScan();
-        AnnotationConfigApplicationContext annotationConfigApplicationContext = new AnnotationConfigApplicationContext ();
-        IndexService service = (IndexService) annotationConfigApplicationContext.getBean("IndexServiceimpl");
+
+
         //IndexService service2 = (IndexService) annotationConfigApplicationContext.getBean("IndexServiceimpl2");
 //        for(int i = 0 ; i < 10 ; i ++)
 //        {
-//                service.index();
+                //service.index();
 //        }
 //        try
 //

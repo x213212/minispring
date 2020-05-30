@@ -35,24 +35,9 @@ public class MyDispatcherServlet extends HttpServlet{
     }
     @Override
     public void init(ServletConfig config) throws ServletException {
-        System.out.println("ewr");
-        //1.加载配置文件
-//        doLoadConfig(config.getInitParameter("contextConfigLocation"));
-//
-//        //2.初始化所有相关联的类,扫描用户设定的包下面所有的类
-//        doScanner(properties.getProperty("scanPackage"));
-//
-//        //3.拿到扫描到的类,通过反射机制,实例化,并且放到ioc容器中(k-v  beanName-bean) beanName默认是首字母小写
-//        doInstance();
-//
-//        //4.初始化HandlerMapping(将url和method对应上)
-//        initHandlerMapping();
-
+        System.out.println("MyDispatcherServlet init");
 
     }
-
-
-
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -90,19 +75,22 @@ public class MyDispatcherServlet extends HttpServlet{
 
         Method method =this.handlerMapping.get(url);
 
-        //获取方法的参数列表
+        //取得參數所有型態
         Class<?>[] parameterTypes = method.getParameterTypes();
 
-        //获取请求的参数
+        //取得請求參數
         Map<String, String[]> parameterMap = req.getParameterMap();
 
-        //保存参数值
+        //儲存請求參數
         Object [] paramValues= new Object[parameterTypes.length];
 
+        Map<String, String> params = new  HashMap<>();
+        //List keys = new ArrayList(parameterMap.keySet());
         String responseString ="";
+        
         //方法的参数列表
         for (int i = 0; i<parameterTypes.length; i++){
-            //根据参数名称，做某些处理
+            //處理參數
             String requestParam = parameterTypes[i].getSimpleName();
 
 
@@ -115,27 +103,32 @@ public class MyDispatcherServlet extends HttpServlet{
                 paramValues[i]=resp;
                 continue;
             }
-            String tmp1 ="",tmp2 ="" ;
-            Integer sad = 0;
+
+
             if(requestParam.equals("String")){
 
+
+
                 for (Map.Entry<String, String[]> param : parameterMap.entrySet()) {
+
                     String value =Arrays.toString(param.getValue()).replaceAll("\\[|\\]", "").replaceAll(",\\s", ",");
+                    params.put(param.getKey(),value);
 
-                    paramValues[i]=value;
-                    if(sad == i){
-                    tmp1=value;
-                    tmp2=param.getKey();}
-
-                    sad++;
                 }
             }
-            responseString+= tmp2+ ":"+ tmp1+"\n"  ;
+
+
+        }
+        for (Map.Entry<String, String> param : params.entrySet()) {
+            responseString+= param.getKey() +":" +param.getValue()  + "\n";
+
         }
         //反射調用
         try {
-            method.invoke(this.controllerMap.get(url), paramValues);
-            resp.getWriter().write( "doTest method success! \n"+responseString);
+           Object tmp = method.invoke(this.controllerMap.get(url), paramValues);
+
+            resp.getWriter().write( "doTest method success! \n"+responseString
+                    +"return type :"+method.getReturnType() + ": value :" + (String)tmp);
         } catch (Exception e) {
             e.printStackTrace();
         }

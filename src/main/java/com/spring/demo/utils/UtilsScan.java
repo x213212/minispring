@@ -2,28 +2,20 @@ package com.spring.demo.utils;
 
 import com.spring.demo.anno.*;
 import com.spring.demo.anno.aop.*;
-import com.spring.demo.aop.IndexAop;
-import com.spring.demo.serivce.IndexService;
 import com.spring.demo.servlet.MyDispatcherServlet;
-import com.sun.net.httpserver.HttpServer;
+import net.sf.cglib.proxy.Enhancer;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
 
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.awt.datatransfer.SystemFlavorMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.lang.reflect.Proxy;
 import java.util.*;
 
@@ -110,6 +102,8 @@ public class UtilsScan {
 
         checkAnnotation();
         initHandlerMapping();
+
+
     }
 
 
@@ -215,6 +209,7 @@ public class UtilsScan {
 
     }
     public static void checkAnnotation()  {
+
         //Autowired
         for (Map <String , Object>  annotations: ioclist ){
             for ( String annotationkv : annotations.keySet()){
@@ -239,14 +234,16 @@ public class UtilsScan {
 
                             for (Map<String, Object> annotationchilds : ioclist) {
                                 for (String annotationchildkv : annotationchilds.keySet()) {
-                                    if (annotationchilds.get(annotationchildkv).getClass().getSimpleName().equals(targetName)) {
-
+                                    if (annotationchilds.get(annotationchildkv).getClass().getSimpleName().equals(targetName)){
+// && 'annotationchildkv.equals(targetName)'
                                         tempfield.setAccessible(true);
                                         try {
-                                            tempfield.set(tempObject, annotationchilds.get(targetName));
+
+                                                tempfield.set(tempObject, annotationchilds.get(targetName));
                                         } catch (IllegalAccessException e) {
                                             e.printStackTrace();
                                         }
+                                        break;
                                     }
                                 }
                             }
@@ -273,15 +270,14 @@ public class UtilsScan {
                 }
 
 
-                if(tempClassType.equals("Aspect")) {
+                if(tempClassType.equals("Aspect")   ) {
                     Method[] Methods = tempClass.getMethods();
                     for (Method method : Methods)
                     {
                         Before[] filters = method.getAnnotationsByType(Before.class);
                         Annotation[][] tttt= method.getParameterAnnotations();
-                        Parameter[] parameters = method.getParameters();
-                        Class[] parameterTypes = method.getParameterTypes();
-                        Advice AfterAdvice = null;
+
+                        Advice2 AfterAdvice = null;
                         for(Before filter : filters) {
                             for (int i = 0 ; i <filter.value().length ; i ++){
                                 System.out.println(filter.value()[i]);
@@ -294,17 +290,32 @@ public class UtilsScan {
                                         Class tempClass2 = tempObject2.getClass();
                                         if(tempClass2.getName().equals(filter.value()[0].toString())){
                                             //System.out.println(filter.value()[1].toString());
-                                            Method aopmethod =  tempClass.getMethod(filter.value()[1].toString(),null);
-                                            AfterAdvice = new BeforeAdvice(tempObject2,  aopmethod,tempObject);
-                                            Object helloServiceProxy = UtilsScan.getProxy(tempObject2, AfterAdvice);
 
-                                            map.put(tempClass2.getSimpleName() , helloServiceProxy);
+//                                            CglibProxyDemo.Original original = new CglibProxyDemo.Original();
+//                                            AfterAdvice = new BeforeAdvice2(tempObject2,  aopmethod,tempObject);
+//                                            Object f =  Enhancer.create(tempClass2,AfterAdvice);
+
+                                            Method aopmethod =  tempClass.getMethod(filter.value()[1].toString(),null);
+                                           // AfterAdvice = new BeforeAdvice2(tempObject2,  aopmethod,tempObject);
+                                            //Object helloServiceProxy = UtilsScan.getProxy(tempObject2, AfterAdvice);
+                                          //  AfterAdvice = new BeforeAdvice2(tempObject2,  aopmethod,tempObject);
+                                           // Object helloServiceProxy2 =  Enhancer.create(tempClass2,AfterAdvice);
+
+                                            //设置回调接口,这里的MethodInterceptor实现类回调接口，而我们又实现了MethodInterceptor,其实
+                                            //这里的回调接口就是本类对象,调用的方法其实就是intercept()方法
+//                                            IndexServiceimpl original = new IndexServiceimpl();
+                                            Advice2 handler = new BeforeAdvice2(tempObject2,  aopmethod,tempObject);
+                                            Object f =  Enhancer.create(tempClass2,handler);
+                                            map.put(tempClass2.getSimpleName() , f);
+//                                            IndexServiceimpl tmp = (IndexServiceimpl)f;
+//                                            tmp.index();
                                             //ioclist.remove(tempObject2);
                                             for (int x =0 ; x < ioclist.size() ; x ++)
                                             {
                                                 if(ioclist.get(x).keySet().equals( annotations2.keySet()))
                                                 {
                                                     //System.out.println(map);
+
                                                     ioclist.set(x,map);
                                                     //System.out.println("ioclist hash map : "+ioclist);
                                                     break;
@@ -314,6 +325,7 @@ public class UtilsScan {
                                             }
 
                                         }
+                                        break;
                                     }
                                 }
 
@@ -328,6 +340,69 @@ public class UtilsScan {
 
             }
         }
+        //checkporxyageain
+        for (Map <String , Object>  annotations: ioclist ){
+            for ( String annotationkv : annotations.keySet()){
+                Object tempObject =   annotations.get(annotationkv);
+                Class tempClass = tempObject.getClass();
+                ComponentTest[] tempType = (ComponentTest[]) tempClass.getAnnotationsByType(ComponentTest.class);
+                String tempClassType=null;
+                try {
+                    tempClassType = tempType[0].value()[0];
+                    System.out.println(tempType[0].value()[0]);
+
+                } catch ( Exception e){
+                    tempClassType ="";
+                }
+
+                if (tempClassType.equals("Default") || tempClassType.equals("") || tempClassType.equals("Controller") ) {
+                    Field[] fields = tempClass.getDeclaredFields();
+                    for (Field tempfield : fields) {
+//                    System.out.println(tempfield.value());
+                        if (tempfield.isAnnotationPresent(Autowired.class)) {
+                            String targetName = tempfield.getType().getSimpleName();
+
+                            for (Map<String, Object> annotationchilds : ioclist) {
+                                for (String annotationchildkv : annotationchilds.keySet()) {
+                                    tempfield.setAccessible(true);
+                                    try {
+
+                                        tempfield.set(tempObject, annotationchilds.get(targetName));
+                                    } catch (IllegalAccessException e) {
+                                        e.printStackTrace();
+                                    }
+//                                    try {
+//                                        if(targetName.equals("IndexServiceimpl")){
+////                                                try {
+//////                                                    Class classtmp  =  Class.forName("com.spring.demo.impl.IndexServiceimpl" );
+//////                                                    Object tmp   = classtmp.cast(ioclist.get(3).get("IndexServiceimpl")) ;
+////                                                    //tmp.index();;
+////                                                    tempfield.set(tempObject,ioclist.get(3).get("IndexServiceimpl") );
+////                                                } catch (ClassNotFoundException e) {
+////                                                    e.printStackTrace();
+////                                                }
+//
+//                                            tempfield.set(tempObject,ioclist.get(3).get("IndexServiceimpl") );
+//                                        }
+//                                        else
+//                                            tempfield.set(tempObject, annotationchilds.get(targetName));
+//                                    } catch (IllegalAccessException e) {
+//                                        e.printStackTrace();
+//                                    }
+//                                    break;
+//                                    if (annotationchilds.get(annotationchildkv).getClass().getSimpleName().equals(targetName)|| annotationchildkv.equals("IndexController")){
+//// && 'annotationchildkv.equals(targetName)'
+//
+//                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
     }
 
 
@@ -349,7 +424,10 @@ public class UtilsScan {
         return Proxy.newProxyInstance(UtilsScan.class.getClassLoader(),
                 bean.getClass().getInterfaces(), advice);
     }
-
+    public static Object getProxy2(Object bean, Advice advice) {
+        return Proxy.newProxyInstance(UtilsScan.class.getClassLoader(),
+                bean.getClass().getInterfaces(), advice);
+    }
 
 //    public static void main(String[] args) {
 //        doLoadConfig(config.getInitParameter("contextConfigLocation"));

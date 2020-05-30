@@ -20,9 +20,16 @@ public class IndexController {
     @Autowired
     IndexServiceimpl service;
 
+
+    @Autowired
+    IndexServiceimpl service2;
+
     @MyRequestMapping("/doTest")
-    public void test1(@MyRequestParam("param") String param,@MyRequestParam("param2") String param2){
+    public String test1(@MyRequestParam("param") String param,
+                      @MyRequestParam("param2") String param2){
         service.index();
+
+        return "jojo";
     }
 }
 
