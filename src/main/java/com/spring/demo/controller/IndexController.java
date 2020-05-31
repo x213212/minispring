@@ -27,7 +27,16 @@ public class IndexController {
     @MyRequestMapping("/doTest")
     public String test1(@MyRequestParam("param") String param,
                       @MyRequestParam("param2") String param2){
+        System.out.println("IndexController method call");
         service.index();
+
+        return "jojo";
+    }
+
+    @MyRequestMapping("/doTest2")
+    public String test2(@MyRequestParam("param") String param,
+                        @MyRequestParam("param2") String param2){
+        this.test1("1,2","12");
 
         return "jojo";
     }

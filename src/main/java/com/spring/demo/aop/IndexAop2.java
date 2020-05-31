@@ -1,19 +1,17 @@
 package com.spring.demo.aop;
 
 
-import com.spring.demo.anno.After;
 import com.spring.demo.anno.Before;
 import com.spring.demo.anno.ComponentTest;
-import com.spring.demo.serivce.IndexService;
 
 
 @ComponentTest("Aspect")
-public class IndexAop {
-    @Before({"com.spring.demo.controller.IndexController","beforeMethod"})
-    public void beforeMethod(){
-        System.out.println("bftest3");
-    }
+public class IndexAop2 {
 
+    @Before({"com.spring.demo.dao.IndexDao","beforeMethod"})
+    public void beforeMethod(){
+        System.out.println("bftest");
+    }
 
 
 
