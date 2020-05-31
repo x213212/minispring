@@ -9,6 +9,7 @@ import com.spring.demo.serivce.IndexService;
 
 @ComponentTest("Aspect")
 public class IndexAop {
+
     @Before({"com.spring.demo.controller.IndexController","beforeMethod"})
     public void beforeMethod(){
         System.out.println("bftest3");
