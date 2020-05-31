@@ -361,41 +361,63 @@ public class UtilsScan {
 //                    System.out.println(tempfield.value());
                         if (tempfield.isAnnotationPresent(Autowired.class)) {
                             String targetName = tempfield.getType().getSimpleName();
+                                   for(int i =0 ; i <ioclist.size();i++)
+                                {
 
-                            for (Map<String, Object> annotationchilds : ioclist) {
-                                for (String annotationchildkv : annotationchilds.keySet()) {
-                                    tempfield.setAccessible(true);
-                                    try {
+                                     if (ioclist.get(i).containsKey(targetName) ){
+// && 'annotationchildkv.equals(targetName)'
+                                        tempfield.setAccessible(true);
+                                        try {
+                                            Map<String, Object> annotationchilds = ioclist.get(i);
+                                            tempfield.set(tempObject, annotationchilds.get(targetName));
+                                        } catch (IllegalAccessException e) {
+                                            e.printStackTrace();
+                                        }
 
-                                        tempfield.set(tempObject, annotationchilds.get(targetName));
-                                    } catch (IllegalAccessException e) {
-                                        e.printStackTrace();
                                     }
+                                }
+//                            for (Map<String, Object> annotationchilds : ioclist) {
+//                                for (String annotationchildkv : annotationchilds.keySet()) {
+////                                    tempfield.setAccessible(true);
+////                                    try {
+////
+////                                        tempfield.set(tempObject, annotationchilds.get(annotationchildkv));
+////                                    } catch (IllegalAccessException e) {
+////                                        e.printStackTrace();
+////                                    }
+////                                    try {
+////                                        if(targetName.equals("IndexServiceimpl")){
+//////                                                try {
+////////                                                    Class classtmp  =  Class.forName("com.spring.demo.impl.IndexServiceimpl" );
+////////                                                    Object tmp   = classtmp.cast(ioclist.get(3).get("IndexServiceimpl")) ;
+//////                                                    //tmp.index();;
+//////                                                    tempfield.set(tempObject,ioclist.get(3).get("IndexServiceimpl") );
+//////                                                } catch (ClassNotFoundException e) {
+//////                                                    e.printStackTrace();
+//////                                                }
+////
+////                                            tempfield.set(tempObject,ioclist.get(3).get("IndexServiceimpl") );
+////                                        }
+////                                        else
+////                                            tempfield.set(tempObject, annotationchilds.get(targetName));
+////                                    } catch (IllegalAccessException e) {
+////                                        e.printStackTrace();
+////                                    }
+////                                    break;
+//                                    if (annotationchilds.get(annotationchildkv).getClass().getSimpleName().equals(targetName) ){
+//// && 'annotationchildkv.equals(targetName)'
+//                                        tempfield.setAccessible(true);
 //                                    try {
-//                                        if(targetName.equals("IndexServiceimpl")){
-////                                                try {
-//////                                                    Class classtmp  =  Class.forName("com.spring.demo.impl.IndexServiceimpl" );
-//////                                                    Object tmp   = classtmp.cast(ioclist.get(3).get("IndexServiceimpl")) ;
-////                                                    //tmp.index();;
-////                                                    tempfield.set(tempObject,ioclist.get(3).get("IndexServiceimpl") );
-////                                                } catch (ClassNotFoundException e) {
-////                                                    e.printStackTrace();
-////                                                }
 //
-//                                            tempfield.set(tempObject,ioclist.get(3).get("IndexServiceimpl") );
-//                                        }
-//                                        else
-//                                            tempfield.set(tempObject, annotationchilds.get(targetName));
+//                                        tempfield.set(tempObject, annotationchilds.get(annotationchildkv));
 //                                    } catch (IllegalAccessException e) {
 //                                        e.printStackTrace();
 //                                    }
-//                                    break;
-//                                    if (annotationchilds.get(annotationchildkv).getClass().getSimpleName().equals(targetName)|| annotationchildkv.equals("IndexController")){
-//// && 'annotationchildkv.equals(targetName)'
 //
 //                                    }
-                                }
-                            }
+//
+//                                }
+//                            }
                         }
                     }
                 }
