@@ -166,51 +166,19 @@ public class UtilsScan {
                             controllerMap.put(url,tempObject);
                             System.out.println(url+","+method);
                         }
-//                        if(tempClass.isAnnotationPresent(MyRequestMapping.class)){
-//                            MyRequestMapping annotation = tempClass.getAnnotation(MyRequestMapping.class);
-//                            baseUrl=annotation.value();
-//                        }
-
-
                     }
 
 
                 }
             }
-//            for (Map.Entry<String, Object> entry: ioclist.entrySet()) {
-//                Class<? extends Object> clazz = entry.getValue().getClass();
-//                if(!clazz.isAnnotationPresent(ComponentTest.class)){
-//                    continue;
-//                }
-//
-//                //拼url时,是controller头的url拼上方法上的url
-//                String baseUrl ="";
-//                if(clazz.isAnnotationPresent(MyRequestMapping.class)){
-//                    MyRequestMapping annotation = clazz.getAnnotation(MyRequestMapping.class);
-//                    baseUrl=annotation.value();
-//                }
-//                Method[] methods = clazz.getMethods();
-//                for (Method method : methods) {
-//                    if(!method.isAnnotationPresent(MyRequestMapping.class)){
-//                        continue;
-//                    }
-//                    MyRequestMapping annotation = method.getAnnotation(MyRequestMapping.class);
-//                    String url = annotation.value();
-//
-//                    url =(baseUrl+"/"+url).replaceAll("/+", "/");
-//                    handlerMapping.put(url,method);
-//                    controllerMap.put(url,clazz.newInstance());
-//                    System.out.println(url+","+method);
-//                }
-//
-//            }
+
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
-    public static  List<Map <String , Object>> recur( List<Map <String , Object>> master) {
+    public static  List<Map <String , Object>> BeanAopMapping( List<Map <String , Object>> master) {
         List<Map<String, Object>> tmp =   new ArrayList<>() ;
 
         for (Map<String, Object> annotations : master) {
@@ -248,10 +216,12 @@ public class UtilsScan {
                                                 map.put(targetName, annotationchilds.get(targetName));
 //
                                                 int k =0;
+                                                boolean find = false;
                                                 for (Map<String, Object> proxyio : proxyioclist) {
                                                     for (String proxyiokv : proxyio.keySet()) {
                                                         if(proxyiokv.equals(targetName)){
                                                             tempfield.set(tempObject, proxyio.get(targetName));
+                                                                find =true;
                                                           //  proxyioclist.remove(k);
                                                             break;
                                                         }
@@ -259,9 +229,14 @@ public class UtilsScan {
                                                     }
 
                                                 }
+                                                if(find == false)
+                                                {
+                                                    tempfield.set(tempObject, annotationchilds.get(targetName));
 
+
+                                                }
                                                 tmp.add(map);
-                                                recur(tmp);
+                                                BeanAopMapping(tmp);
 
                                             } catch (IllegalAccessException e) {
                                                 e.printStackTrace();
@@ -291,7 +266,7 @@ public class UtilsScan {
     }
 
 
-    public static  List<Map <String , Object>> recur2( List<Map <String , Object>> master) {
+    public static  List<Map <String , Object>> ScanAOP( List<Map <String , Object>> master) {
         List<Map<String, Object>> tmp =   new ArrayList<>() ;
         for (Map <String , Object>  annotations: master ){
             for ( String annotationkv : annotations.keySet()){
@@ -326,21 +301,9 @@ public class UtilsScan {
                                         Object tempObject2 = annotations2.get(annotationkv2);
                                         Class tempClass2 = tempObject2.getClass();
                                         if (tempClass2.getName().equals(filter.value()[0].toString())) {
-                                            //System.out.println(filter.value()[1].toString());
-
-//                                            CglibProxyDemo.Original original = new CglibProxyDemo.Original();
-//                                            AfterAdvice = new BeforeAdvice2(tempObject2,  aopmethod,tempObject);
-//                                            Object f =  Enhancer.create(tempClass2,AfterAdvice);
 
                                             Method aopmethod = tempClass.getMethod(filter.value()[1].toString(), null);
-                                            // AfterAdvice = new BeforeAdvice2(tempObject2,  aopmethod,tempObject);
-                                            //Object helloServiceProxy = UtilsScan.getProxy(tempObject2, AfterAdvice);
-                                            //  AfterAdvice = new BeforeAdvice2(tempObject2,  aopmethod,tempObject);
-                                            // Object helloServiceProxy2 =  Enhancer.create(tempClass2,AfterAdvice);
 
-                                            //设置回调接口,这里的MethodInterceptor实现类回调接口，而我们又实现了MethodInterceptor,其实
-                                            //这里的回调接口就是本类对象,调用的方法其实就是intercept()方法
-//                                            IndexServiceimpl original = new IndexServiceimpl();
                                             Map<String, Object> map = new HashMap<>();
 
                                             Advice2 handler = new BeforeAdvice2(tempObject2, aopmethod, tempObject);
@@ -351,24 +314,8 @@ public class UtilsScan {
 
                                             proxyioclist.add(map);
 
-//                                            IndexServiceimpl tmp = (IndexServiceimpl)f;
-//                                            tmp.index();
-                                            //ioclist.remove(tempObject2);
                                             tmp.add(map);
-                                            recur2(tmp);
-//                                            for (int x =0 ; x < ioclist.size() ; x ++)
-//                                            {
-//                                                if(ioclist.get(x).keySet().equals( annotations2.keySet()))
-//                                                {
-//                                                    //System.out.println(map);
-//
-//                                                    ioclist.set(x,map);
-//                                                    //System.out.println("ioclist hash map : "+ioclist);
-//                                                break;
-//                                                }
-//
-//
-//                                            }
+                                            ScanAOP(tmp);
 
                                         }
                                         break;
@@ -389,7 +336,7 @@ public class UtilsScan {
 
         return master;
     }
-    public static  List<Map <String , Object>> recur4 (List<Map <String , Object>> master) {
+    public static  List<Map <String , Object>> AOPMapping (List<Map <String , Object>> master) {
         List<Map <String , Object>> tmp = new ArrayList<>() ;
         for( int s = 0 ; s < master.size();s ++){
             Set set =((HashMap) master.get(s)).entrySet();
@@ -413,45 +360,19 @@ public class UtilsScan {
                                             map.put( targetName, annotationchilds.get(targetName));
                                             tempfield.set(me.getValue(), annotationchilds.get(targetName));
                                             tmp.add(map);
-//                                            recur4(tmp);
-
                                         } catch (IllegalAccessException e) {
                                             e.printStackTrace();
                                         }
                                         break;
                                     }
-
-
-
-
                         }
-                  //  tst.put(targetName ,tempfield);
                     }
-                  //  tmp.add(tst);
-                    //recur4(tmp);
-                    System.out.println(tmp +"wwwww");
-                 ;
                 }
             }
         }
         return master;
     }
-    public static void checkAnnotation()  {
-        List<Map<String, Object>> tmp2 = new ArrayList<>();
-        recur2(ioclist);
-        recur4(proxyioclist);
-//        Set set =((HashMap) proxyioclist.get(0)).entrySet();
-//        Iterator i =set.iterator();
-//        // Display elements
-//        while(i.hasNext()) {
-//            Map.Entry me = (Map.Entry)i.next();
-//            System.out.print(me.getKey() + ": ");
-//            if( me.getValue().getClass().getSuperclass().getDeclaredFields().length >0)
-//            System.out.println(me.getValue());
-//        }
-
-
-        recur(ioclist);
+    public static  void Switchbean(){
 
         for(int i = 0 ; i <ioclist.size() ; i++)
             for(int j = 0 ; j <proxyioclist.size() ; j++){
@@ -460,191 +381,15 @@ public class UtilsScan {
                     break;
                 }
             }
-
-// && 'annotationchil
-
-
-
+    }
+    public static void checkAnnotation()  {
+        //scan aop
+        ScanAOP(ioclist);
+        AOPMapping(proxyioclist);
+        BeanAopMapping(ioclist);
+        Switchbean();
 
         }
-//        //Autowired
-//        for (Map <String , Object>  annotations: ioclist ){
-//            for ( String annotationkv : annotations.keySet()){
-//                Object tempObject =   annotations.get(annotationkv);
-//                Class tempClass = tempObject.getClass();
-//                ComponentTest[] tempType = (ComponentTest[]) tempClass.getAnnotationsByType(ComponentTest.class);
-//                String tempClassType=null;
-//                try {
-//                    tempClassType = tempType[0].value()[0];
-//                    System.out.println(tempType[0].value()[0]);
-//
-//                } catch ( Exception e){
-//                    tempClassType ="";
-//                }
-//
-//                if (tempClassType.equals("Default") || tempClassType.equals("") || tempClassType.equals("Controller") ) {
-//                    Field[] fields = tempClass.getDeclaredFields();
-//                    for (Field tempfield : fields) {
-////                    System.out.println(tempfield.value());
-//                        if (tempfield.isAnnotationPresent(Autowired.class)) {
-//                            String targetName = tempfield.getType().getSimpleName();
-//
-//                            for (Map<String, Object> annotationchilds : ioclist) {
-//                                for (String annotationchildkv : annotationchilds.keySet()) {
-//                                    if (annotationchilds.get(annotationchildkv).getClass().getSimpleName().equals(targetName)){
-//// && 'annotationchildkv.equals(targetName)'
-//                                        tempfield.setAccessible(true);
-//                                        try {
-//
-//                                                tempfield.set(tempObject, annotationchilds.get(targetName));
-//                                        } catch (IllegalAccessException e) {
-//                                            e.printStackTrace();
-//                                        }
-//                                        break;
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//
-//            }
-//        }
-
-//        //aop
-//        for (Map <String , Object>  annotations: ioclist ){
-//            for ( String annotationkv : annotations.keySet()){
-//                Object tempObject =   annotations.get(annotationkv);
-//                Class tempClass = tempObject.getClass();
-//                ComponentTest[] tempType = (ComponentTest[]) tempClass.getAnnotationsByType(ComponentTest.class);
-//                String tempClassType=null;
-//                try {
-//                    tempClassType = tempType[0].value()[0];
-//                    System.out.println(tempType[0].value()[0]);
-//
-//                } catch ( Exception e){
-//                    tempClassType ="";
-//                }
-//
-//
-//                if(tempClassType.equals("Aspect")   ) {
-//                    Method[] Methods = tempClass.getMethods();
-//                    for (Method method : Methods)
-//                    {
-//                        Before[] filters = method.getAnnotationsByType(Before.class);
-//                        Annotation[][] tttt= method.getParameterAnnotations();
-//
-//                        Advice2 AfterAdvice = null;
-//                        for(Before filter : filters) {
-//                            for (int i = 0 ; i <filter.value().length ; i ++){
-//                                System.out.println(filter.value()[i]);
-//                            }
-//                            Map<String , Object>  map= new HashMap<>();
-//                            try {
-//                                for (Map <String , Object>  annotations2: ioclist ){
-//                                    for ( String annotationkv2 : annotations2.keySet()){
-//                                        Object tempObject2 =   annotations2.get(annotationkv2);
-//                                        Class tempClass2 = tempObject2.getClass();
-//                                        if(tempClass2.getName().equals(filter.value()[0].toString())){
-//                                            //System.out.println(filter.value()[1].toString());
-//
-////                                            CglibProxyDemo.Original original = new CglibProxyDemo.Original();
-////                                            AfterAdvice = new BeforeAdvice2(tempObject2,  aopmethod,tempObject);
-////                                            Object f =  Enhancer.create(tempClass2,AfterAdvice);
-//
-//                                            Method aopmethod =  tempClass.getMethod(filter.value()[1].toString(),null);
-//                                           // AfterAdvice = new BeforeAdvice2(tempObject2,  aopmethod,tempObject);
-//                                            //Object helloServiceProxy = UtilsScan.getProxy(tempObject2, AfterAdvice);
-//                                          //  AfterAdvice = new BeforeAdvice2(tempObject2,  aopmethod,tempObject);
-//                                           // Object helloServiceProxy2 =  Enhancer.create(tempClass2,AfterAdvice);
-//
-//                                            //设置回调接口,这里的MethodInterceptor实现类回调接口，而我们又实现了MethodInterceptor,其实
-//                                            //这里的回调接口就是本类对象,调用的方法其实就是intercept()方法
-////                                            IndexServiceimpl original = new IndexServiceimpl();
-//                                            Advice2 handler = new BeforeAdvice2(tempObject2,  aopmethod,tempObject);
-//                                            Object f =  Enhancer.create(tempClass2,handler);
-//                                            map.put(tempClass2.getSimpleName() , f);
-////                                            IndexServiceimpl tmp = (IndexServiceimpl)f;
-////                                            tmp.index();
-//                                            //ioclist.remove(tempObject2);
-//                                            for (int x =0 ; x < ioclist.size() ; x ++)
-//                                            {
-//                                                if(ioclist.get(x).keySet().equals( annotations2.keySet()))
-//                                                {
-//                                                    //System.out.println(map);
-//
-//                                                    ioclist.set(x,map);
-//                                                    //System.out.println("ioclist hash map : "+ioclist);
-//                                                break;
-//                                                }
-//
-//
-//                                            }
-//
-//                                        }
-//                                        break;
-//                                    }
-//                                }
-//
-//                            } catch (NoSuchMethodException e) {
-//                                e.printStackTrace();
-//                            }
-//
-//                        }
-//
-//                    }
-//                }
-//
-//            }
-//        }
-//
-//        //checkporxyageain
-//        for (Map <String , Object>  annotations: ioclist ){
-//            for ( String annotationkv : annotations.keySet()){
-//                Object tempObject =   annotations.get(annotationkv);
-//                Class tempClass = tempObject.getClass();
-//                ComponentTest[] tempType = (ComponentTest[]) tempClass.getAnnotationsByType(ComponentTest.class);
-//                String tempClassType=null;
-//                try {
-//                    tempClassType = tempType[0].value()[0];
-//                    System.out.println(tempType[0].value()[0]);
-//
-//                } catch ( Exception e){
-//                    tempClassType ="";
-//                }
-//
-//                if (tempClassType.equals("Default") || tempClassType.equals("") || tempClassType.equals("Controller") ) {
-//                    Field[] fields = tempClass.getDeclaredFields();
-//                    for (Field tempfield : fields) {
-////                    System.out.println(tempfield.value());
-//                        if (tempfield.isAnnotationPresent(Autowired.class)) {
-//                            String targetName = tempfield.getType().getSimpleName();
-//                                   for(int i =0 ; i <ioclist.size();i++)
-//                                {
-//
-//                                     if (ioclist.get(i).containsKey(targetName) ){
-//                                        tempfield.setAccessible(true);
-//                                        try {
-//                                            Map<String, Object> annotationchilds = ioclist.get(i);
-//                                            tempfield.set(tempObject, annotationchilds.get(targetName));
-//                                        } catch (IllegalAccessException e) {
-//                                            e.printStackTrace();
-//                                        }
-//
-//                                    }
-//                                }
-//                        }
-//                    }
-//                }
-//
-//            }
-//        }
-
-
-
-
-
-
     /**
      * 把字符串的首字母小写
      * @param name
@@ -666,9 +411,5 @@ public class UtilsScan {
                 bean.getClass().getInterfaces(), advice);
     }
 
-//    public static void main(String[] args) {
-//        doLoadConfig(config.getInitParameter("contextConfigLocation"));
-//        UtilsScan.doScan();
-//    }
 
 }

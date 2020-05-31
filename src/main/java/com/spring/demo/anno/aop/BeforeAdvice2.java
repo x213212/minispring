@@ -26,7 +26,7 @@ public class BeforeAdvice2 implements Advice2 {
       //  methodInvocation.invoke(o,null);
         methodInvocation.invoke(this.o,null);
         Object result = method.invoke(bean, args);
-        System.out.println(method.getName());
+       // System.out.println(method.getName());
 
      //   method.invoke(o, null);
      //   System.out.println("AFTER");
