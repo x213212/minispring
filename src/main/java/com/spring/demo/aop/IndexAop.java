@@ -12,7 +12,13 @@ public class IndexAop {
 
     @Before({"com.spring.demo.controller.IndexController","beforeMethod"})
     public void beforeMethod(){
-        System.out.println("bftest3");
+        System.out.println("beforeMethod");
+    }
+
+
+    @After({"com.spring.demo.controller.IndexController","AfterMethod"})
+    public void AfterMethod(){
+        System.out.println("AfterMethod");
     }
 
 

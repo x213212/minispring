@@ -5,6 +5,7 @@ import net.sf.cglib.proxy.MethodInterceptor;
 import java.lang.reflect.InvocationHandler;
 
 public interface Advice2 extends MethodInterceptor {
-
+    public void before();
+    public void After();
 
 }

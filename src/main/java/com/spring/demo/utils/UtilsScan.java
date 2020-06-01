@@ -286,53 +286,63 @@ public class UtilsScan {
                 if( tempClassType.equals("Aspect")) {
                     Method[] Methods = tempClass.getMethods();
                     for (Method method : Methods) {
-                        Before[] filters = method.getAnnotationsByType(Before.class);
-                        Annotation[][] tttt = method.getParameterAnnotations();
+                        List<Map <String , Object>> methodlist =  new ArrayList<>();
+                        Before[] filters = null;
+                        if(method.getAnnotationsByType(Before.class).length >0){
+                         filters = method.getAnnotationsByType(Before.class);
 
-                        Advice2 AfterAdvice = null;
-                        for (Before filter : filters) {
-                            for (int i = 0; i < filter.value().length; i++) {
-                                System.out.println(filter.value()[i]);
-                            }
+                            Advice2 AfterAdvice = null;
 
-                            try {
-                                for (Map<String, Object> annotations2 : ioclist) {
-                                    for (String annotationkv2 : annotations2.keySet()) {
-                                        Object tempObject2 = annotations2.get(annotationkv2);
-                                        Class tempClass2 = tempObject2.getClass();
-                                        if (tempClass2.getName().equals(filter.value()[0].toString())) {
-
-                                            Method aopmethod = tempClass.getMethod(filter.value()[1].toString(), null);
-
-                                            Map<String, Object> map = new HashMap<>();
-
-                                            Advice2 handler = new BeforeAdvice2(tempObject2, aopmethod, tempObject);
-                                            Object f = Enhancer.create(tempClass2, handler);
-                                            //map.put(tempClass2.getSimpleName(), f);
-
-                                            map.put(tempClass2.getSimpleName(), f);
-
-                                            proxyioclist.add(map);
-
-                                            tmp.add(map);
-                                            ScanAOP(tmp);
-
-                                        }
-                                        break;
-                                    }
+                            for (Before filter : filters) {
+                                for (int i = 0; i < filter.value().length; i++) {
+                                    System.out.println(filter.value()[i]);
                                 }
 
-                            } catch (NoSuchMethodException e) {
-                                e.printStackTrace();
+                                try {
+                                    for (Map<String, Object> annotations2 : ioclist) {
+                                        for (String annotationkv2 : annotations2.keySet()) {
+                                            Object tempObject2 = annotations2.get(annotationkv2);
+                                            Class tempClass2 = tempObject2.getClass();
+                                            if (tempClass2.getName().equals(filter.value()[0].toString())) {
+
+                                                Method aopmethod = tempClass.getMethod(filter.value()[1].toString(), null);
+
+                                                Map<String, Object> map = new HashMap<>();
+                                               // Map<Object, Object> map2 = new HashMap<>();
+
+                                                Advice2 handler = new BeforeAdvice2(tempObject2, aopmethod,null, tempObject);
+                                                Object f = Enhancer.create(tempClass2, handler);
+                                                //map.put(tempClass2.getSimpleName(), f);
+
+                                                map.put(tempClass2.getSimpleName(), f);
+                                                //map2.put(tempObject2, aopmethod);
+                                               // methodlist.add( map2);
+                                                proxyioclist.add(map);
+
+                                                tmp.add(map);
+
+                                              //  ScanAOP(tmp);
+                                                break;
+                                            }
+                                            //ScanAOP(tmp);
+
+                                        }
+                                    }
+
+                                } catch (NoSuchMethodException e) {
+                                    e.printStackTrace();
+                                }
                             }
 
                         }
+                    }
+
 
                     }
 
                 }
             }
-        }
+
 
         return master;
     }

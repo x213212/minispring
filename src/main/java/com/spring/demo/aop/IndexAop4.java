@@ -6,14 +6,15 @@ import com.spring.demo.anno.ComponentTest;
 
 
 @ComponentTest("Aspect")
-public class IndexAop3 {
+public class IndexAop4 {
 
 
-    @Before({"com.spring.demo.impl.IndexServiceimpl","beforeMethod"})
+
+
+    @Before({"com.spring.demo.impl.IndexServiceimpl2","beforeMethod"})
     public void beforeMethod(){
-        System.out.println("bftest2");
+        System.out.println("bftest2wwwww");
     }
-
 
 //    @After({"com.spring.demo.impl.IndexServiceimpl","AfterMethod"})
 //    public void AfterMethod(){
