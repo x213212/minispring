@@ -1,11 +1,10 @@
 package com.spring.demo.anno.aop;
 
-import com.spring.demo.impl.IndexServiceimpl;
 import net.sf.cglib.proxy.MethodProxy;
 
 import java.lang.reflect.Method;
 
-public class BeforeAdvice2 implements Advice2 {
+public class BeforeAdvice3 implements Advice2 {
 
     private Object bean;
     private Object o;
@@ -15,7 +14,7 @@ public class BeforeAdvice2 implements Advice2 {
 
 
     private Object original;
-    public BeforeAdvice2(Object bean,Method BeforeMethodInvocation , Method AfterMethodInvocation, Object test ) {
+    public BeforeAdvice3(Object bean, Method BeforeMethodInvocation , Method AfterMethodInvocation, Object test ) {
         this.bean = bean;
         this.methodInvocation = methodInvocation;
         this.BeforeMethodInvocation = BeforeMethodInvocation;
@@ -24,7 +23,9 @@ public class BeforeAdvice2 implements Advice2 {
 
     }
 
+    public BeforeAdvice3 (){
 
+    }
 
     @Override
     public Object intercept(Object o, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
@@ -33,14 +34,14 @@ public class BeforeAdvice2 implements Advice2 {
         //methodInvocation.invoke(this.o,null);
         if(BeforeMethodInvocation != null)
         BeforeMethodInvocation.invoke(this.o,null);
-        Object result = method.invoke(bean, args);
+        //Object result = method.invoke(bean, args);
         if(AfterMethodInvocation != null)
         AfterMethodInvocation.invoke(this.o,null);
        // System.out.println(method.getName());
-
+        System.out.println("qwe");
      //   method.invoke(o, null);
      //   System.out.println("AFTER");
-        return "222";
+        return "1111111";
     }
 
 

@@ -7,11 +7,11 @@ import com.spring.demo.anno.ComponentTest;
 
 @ComponentTest("Aspect")
 public class IndexAop2 {
-
-    @Before({"com.spring.demo.dao.IndexDao","beforeMethod"})
-    public void beforeMethod(){
-        System.out.println("bftest");
-    }
+//
+//    @Before({"com.spring.demo.service.IndexDao","beforeMethod"})
+//    public void beforeMethod(){
+//        System.out.println("bftest");
+//    }
 
 
 

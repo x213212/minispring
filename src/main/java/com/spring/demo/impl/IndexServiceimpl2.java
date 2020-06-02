@@ -3,6 +3,7 @@ package com.spring.demo.impl;
 import com.spring.demo.anno.Autowired;
 import com.spring.demo.anno.ComponentTest;
 import com.spring.demo.dao.IndexDao;
+import com.spring.demo.entity.User;
 import com.spring.demo.serivce.IndexService;
 
 
@@ -15,10 +16,10 @@ public class IndexServiceimpl2 implements IndexService {
         System.out.println("IndexServiceimpl init" );
     }
     @Override
-    public void index() {
+    public User index() {
         System.out.println("IndexServiceimpl method call" );
-        dao.index();
-
+        //dao.index();
+        return   null;
     }
 }
 

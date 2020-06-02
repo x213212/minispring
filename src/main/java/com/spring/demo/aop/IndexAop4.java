@@ -11,10 +11,10 @@ public class IndexAop4 {
 
 
 
-    @Before({"com.spring.demo.impl.IndexServiceimpl2","beforeMethod"})
-    public void beforeMethod(){
-        System.out.println("bftest2wwwww");
-    }
+//    @Before({"com.spring.demo.impl.IndexServiceimpl2","beforeMethod"})
+//    public void beforeMethod(){
+//        System.out.println("bftest2wwwww");
+//    }
 
 //    @After({"com.spring.demo.impl.IndexServiceimpl","AfterMethod"})
 //    public void AfterMethod(){

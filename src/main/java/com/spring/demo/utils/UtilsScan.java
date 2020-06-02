@@ -3,6 +3,8 @@ package com.spring.demo.utils;
 import com.spring.demo.anno.*;
 import com.spring.demo.anno.aop.*;
 import com.spring.demo.servlet.MyDispatcherServlet;
+import com.spring.demo.sqlSession.MyConfiguration;
+import com.spring.demo.sqlSession.MySqlsession;
 import net.sf.cglib.proxy.Enhancer;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -13,8 +15,8 @@ import javax.servlet.http.HttpServlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.*;
@@ -25,7 +27,8 @@ public class UtilsScan {
     public static List<Map <String , Object>> proxyioclist = new ArrayList<>();
 
     private Properties properties = new Properties();
-
+    private static MyConfiguration myConfiguration = new MyConfiguration();
+    private static MySqlsession sqlsession=new MySqlsession();
     private static Map<String, Method> handlerMapping = new  HashMap<>();
 
     private static Map<String, Object> controllerMap  =new HashMap<>();
@@ -66,7 +69,7 @@ public class UtilsScan {
             File childfiletmp = new File( packagePath +"\\" +fileName);
             String classFileName[] = childfiletmp.list();
             for (String className : classFileName ){
-                if(className.equals("aop") || className.equals("run") ||   className.equals("MyDispatcherServlet") )
+                if(className.equals("aop") || className.equals("run") ||   className.equals("MyDispatcherServlet") || className.equals("UtilsScan") )
                     continue;
                 className = className.substring(0,className.indexOf("."));
                 Object object = null;
@@ -83,7 +86,30 @@ public class UtilsScan {
                         ioclist.add(map);
                         // System.out.println( "ADD ComponentTest 註解 :"+object.getClass().getSimpleName()+"object :" +object);
                     }
+                    else if(classtmp.getMethods().length >0){
+                        Method[] methods = classtmp.getDeclaredMethods() ;
+                        for( Method m : methods){
+                            if(m.isAnnotationPresent(Select.class)){
 
+                                //UserDao tmp  = (UserDao) Proxy.newProxyInstance(UserDao.class.getClassLoader(),new Class[]{UserDao.class}, handler);
+                                Map<String , Object>  map= new HashMap<>();
+                                //map.put(tmp.getClass().getSimpleName() , tmp);
+                                //Advice2 handler2 = new BeforeAdvice3();
+                               // object = classtmp.newInstance();
+
+                                SqlInvocationHandler handler  = new SqlInvocationHandler(myConfiguration,sqlsession ,m.getAnnotation(Select.class).value());
+                                object  = Proxy.newProxyInstance(classtmp.getClassLoader(),new Class[]{classtmp},handler);
+                               // ((UserDao)object).query();
+                                //Proxy.newProxyInstance(UserDao.class.getClassLoader(),new Class[]{UserDao.class}, handler);
+                              // object =classtmp.newInstance();
+//                                Object f = Enhancer.create(UserDao.class, handler2);
+                                //map.put(tempClass2.getSimpleName(), f);
+
+                                map.put(className,object);
+                                ioclist.add(map);
+                            }
+                        }
+                    }
                 } catch(InstantiationException e) {
                     e.printStackTrace();
                 } catch (IllegalAccessException e) {
@@ -95,7 +121,7 @@ public class UtilsScan {
             }
 
         }
-        System.out.println("ioclist hash map : "+ioclist);
+//        System.out.println("ioclist hash map : "+ioclist);
         /*
             Autowired
          */
@@ -105,7 +131,6 @@ public class UtilsScan {
 
 
     }
-
 
     private void  doLoadConfig(String location){
         //把web.xml中的contextConfigLocation对应value值的文件加载到流里面
@@ -208,7 +233,7 @@ public class UtilsScan {
 
                                 for (Map<String, Object> annotationchilds : ioclist) {
                                     for (String annotationchildkv : annotationchilds.keySet()) {
-                                        if (annotationchilds.get(annotationchildkv).getClass().getSimpleName().equals(targetName)) {
+                                        if (annotationchilds.get(annotationchildkv).getClass().getSimpleName().equals(targetName) || annotationchildkv.equals(targetName)) {
 // && 'annotationchildkv.equals(targetName)'
                                             tempfield.setAccessible(true);
                                             try {
@@ -311,6 +336,7 @@ public class UtilsScan {
                                                // Map<Object, Object> map2 = new HashMap<>();
 
                                                 Advice2 handler = new BeforeAdvice2(tempObject2, aopmethod,null, tempObject);
+
                                                 Object f = Enhancer.create(tempClass2, handler);
                                                 //map.put(tempClass2.getSimpleName(), f);
 
@@ -321,7 +347,7 @@ public class UtilsScan {
 
                                                 tmp.add(map);
 
-                                              //  ScanAOP(tmp);
+                                               ScanAOP(tmp);
                                                 break;
                                             }
                                             //ScanAOP(tmp);
@@ -412,7 +438,7 @@ public class UtilsScan {
     }
 
 
-    public static Object getProxy(Object bean, Advice advice) {
+    public static Object getProxy(Object bean, InvocationHandler advice) {
         return Proxy.newProxyInstance(UtilsScan.class.getClassLoader(),
                 bean.getClass().getInterfaces(), advice);
     }

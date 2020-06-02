@@ -9,19 +9,19 @@ import com.spring.demo.serivce.IndexService;
 
 @ComponentTest("Aspect")
 public class IndexAop {
-
-    @Before({"com.spring.demo.controller.IndexController","beforeMethod"})
-    public void beforeMethod(){
-        System.out.println("beforeMethod");
-    }
-
-
-    @After({"com.spring.demo.controller.IndexController","AfterMethod"})
-    public void AfterMethod(){
-        System.out.println("AfterMethod");
-    }
-
-
+//
+//    @Before({"com.spring.demo.controller.IndexController","beforeMethod"})
+//    public void beforeMethod(){
+//        System.out.println("beforeMethod");
+//    }
+//
+//
+//    @After({"com.spring.demo.controller.IndexController","AfterMethod"})
+//    public void AfterMethod(){
+//        System.out.println("AfterMethod");
+//    }
+//
+//
 
 
 //    @After({"com.spring.demo.impl.IndexServiceimpl","AfterMethod"})

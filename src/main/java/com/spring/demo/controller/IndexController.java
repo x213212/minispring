@@ -32,9 +32,9 @@ public class IndexController {
     public String test1(@MyRequestParam("param") String param,
                       @MyRequestParam("param2") String param2){
         System.out.println("IndexController method call");
-        service.index();
 
-        return "jojo";
+
+        return     service.index().toString();
     }
 
     @MyRequestMapping("/doTest2")
